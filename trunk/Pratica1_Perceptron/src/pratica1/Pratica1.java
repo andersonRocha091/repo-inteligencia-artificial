@@ -42,7 +42,7 @@ public class Pratica1 {
             do {
                 for (int i = 0; i < entrada.size(); i++) {
                     for (int j = 0; j < entrada.get(i).length - 1; j++) {
-                        u += Float.parseFloat(entrada.get(i)[j]) * vetorPeso[j];
+                        u += (Float.parseFloat(entrada.get(i)[j]))*vetorPeso[j];
                         y = u > 0 ? 1 : -1;
                         float valorDesejado = Float.parseFloat(entrada.get(i)[entrada.get(0).length - 1]);
                         if (y != valorDesejado) {

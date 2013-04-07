@@ -1,0 +1,119 @@
+Treinamento 1:
+Vetor de pesos inicial: 
+0.39952022
+0.31469753
+0.058427442
+0.601838
+O treinamento teve 406 epocas.
+Vetor de pesos final: 
+-3.0804775
+1.530309
+2.510904
+-0.7076377
+Classificação de amostras do treino:1
+Amostra:1 Classificação:-1
+Amostra:2 Classificação:1
+Amostra:3 Classificação:1
+Amostra:4 Classificação:1
+Amostra:5 Classificação:1
+Amostra:6 Classificação:1
+Amostra:7 Classificação:-1
+Amostra:8 Classificação:1
+Amostra:9 Classificação:-1
+Amostra:10 Classificação:-1
+
+Treinamento 2:
+Vetor de pesos inicial: 
+0.9727629
+0.33304146
+0.05940106
+0.78100044
+O treinamento teve 424 epocas.
+Vetor de pesos final: 
+-3.0872345
+1.540458
+2.4680014
+-0.73326004
+Classificação de amostras do treino:2
+Amostra:1 Classificação:-1
+Amostra:2 Classificação:1
+Amostra:3 Classificação:1
+Amostra:4 Classificação:1
+Amostra:5 Classificação:1
+Amostra:6 Classificação:1
+Amostra:7 Classificação:-1
+Amostra:8 Classificação:1
+Amostra:9 Classificação:-1
+Amostra:10 Classificação:-1
+
+Treinamento 3:
+Vetor de pesos inicial: 
+0.68384904
+0.12873524
+0.902556
+0.1288291
+O treinamento teve 441 epocas.
+Vetor de pesos final: 
+-3.1161485
+1.5743865
+2.4965532
+-0.74186254
+Classificação de amostras do treino:3
+Amostra:1 Classificação:-1
+Amostra:2 Classificação:1
+Amostra:3 Classificação:1
+Amostra:4 Classificação:1
+Amostra:5 Classificação:1
+Amostra:6 Classificação:1
+Amostra:7 Classificação:-1
+Amostra:8 Classificação:1
+Amostra:9 Classificação:-1
+Amostra:10 Classificação:-1
+
+Treinamento 4:
+Vetor de pesos inicial: 
+0.27467912
+0.33275425
+0.6869261
+0.637501
+O treinamento teve 386 epocas.
+Vetor de pesos final: 
+-3.0253186
+1.542045
+2.4639869
+-0.7246915
+Classificação de amostras do treino:4
+Amostra:1 Classificação:-1
+Amostra:2 Classificação:1
+Amostra:3 Classificação:1
+Amostra:4 Classificação:1
+Amostra:5 Classificação:1
+Amostra:6 Classificação:1
+Amostra:7 Classificação:-1
+Amostra:8 Classificação:1
+Amostra:9 Classificação:-1
+Amostra:10 Classificação:-1
+
+Treinamento 5:
+Vetor de pesos inicial: 
+0.008098541
+0.9548136
+0.21053751
+0.6426165
+O treinamento teve 383 epocas.
+Vetor de pesos final: 
+-3.0318992
+1.5526434
+2.474486
+-0.72672915
+Classificação de amostras do treino:5
+Amostra:1 Classificação:-1
+Amostra:2 Classificação:1
+Amostra:3 Classificação:1
+Amostra:4 Classificação:1
+Amostra:5 Classificação:1
+Amostra:6 Classificação:1
+Amostra:7 Classificação:-1
+Amostra:8 Classificação:1
+Amostra:9 Classificação:-1
+Amostra:10 Classificação:-1

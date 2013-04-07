@@ -29,7 +29,6 @@ public class Pratica1 {
     }
 
     public static void imprimePesos(float[] vetorPeso) {
-        System.out.println("Imprimindo vetor peso: ");
         for (int i = 0; i < vetorPeso.length; i++) {
             System.out.println(vetorPeso[i]);
         }
@@ -69,7 +68,7 @@ public class Pratica1 {
             epoca++;
         } while (erro == true);
 
-        System.out.println("epocas:" + epoca);
+        System.out.println("O treinamento teve "+epoca+" epocas.");
         epoca = 0;
         return vetorPeso;
     }
@@ -99,12 +98,16 @@ public class Pratica1 {
 
         //loop de treinamentos perceptron
         for (int k = 0; k < qtdTreino; k++) {
-
             System.out.println("Treinamento "+(k+1)+":");
+
+            float[] vetorPeso = gerarVetorPeso(entrada.get(0).length - 1);
+            System.out.println("Vetor de pesos inicial: ");
+            imprimePesos(vetorPeso);
             
             //Fase de treinamento
-            float[] vetorPeso = gerarVetorPeso(entrada.get(0).length - 1);
             vetorPeso = perceptron1Camada(vetorPeso, (float) 0.01, entrada);
+            System.out.println("Vetor de pesos final: ");
+            imprimePesos(vetorPeso);
 
             //Fase de classificação
             System.out.println("Classificação de amostras do treino:" + (k + 1));

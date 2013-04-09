@@ -42,32 +42,34 @@ public class Pratica2 {
         return vetorPeso;
     }
 
-    public static float[] perceptron1Camada(float[] vetorPeso, float taxaAprendizagem,
+    public static float[] adaline(float[] vetorPeso, float taxaAprendizagem,
             ArrayList<float[]> entrada) {
+        float EQMatual=1;
+        float EQMant=Float.POSITIVE_INFINITY;
+        float erro = (float)0.000001;
         int epoca = 0;
-        boolean erro;
         float u = 0;
         int y = 0;
-        float valorDesejado = 0;
-        do {
-            erro = false;
+        float valorDesejado = 0;        
+     
+        while(Math.abs(EQMatual-EQMant)>=erro){            
+            EQMant=EQMatual;
+            //System.out.println("EQManterior: "+EQMant+" "+"Atual:"+EQMatual);
+            EQMatual=0;            
             for (int i = 0; i < entrada.size(); i++) {
+                u = 0;
                 for (int j = 0; j < entrada.get(i).length - 1; j++) {
                     u += (entrada.get(i)[j]) * vetorPeso[j];
-                    valorDesejado = entrada.get(i)[4];
+                }                           
+                valorDesejado = entrada.get(i)[5];
+                for (int j = 0; j < entrada.get(i).length - 1; j++) {
+                    vetorPeso[j] = vetorPeso[j] + taxaAprendizagem*((valorDesejado - u) * entrada.get(i)[j]);
                 }
-                y = u < 0 ? -1 : 1;
-                u = 0;
-                if (y != valorDesejado) {
-                    for (int j = 0; j < entrada.get(i).length - 1; j++) {
-                        vetorPeso[j] = vetorPeso[j] + taxaAprendizagem * (valorDesejado - y) * entrada.get(i)[j];
-                    }
-                    erro = true;
-                }
+                EQMatual+=Math.pow(valorDesejado-u,2);
             }
+            EQMatual=EQMatual/(entrada.size());            
             epoca++;
-        } while (erro == true);
-
+        }
         System.out.println("O treinamento teve "+epoca+" epocas.");
         epoca = 0;
         return vetorPeso;
@@ -79,7 +81,8 @@ public class Pratica2 {
         int[] y = new int[entradaClassificacao.size()];
         for (int i = 0; i < entradaClassificacao.size(); i++) { //Classificação das amostras;
             for (int j = 0; j < entradaClassificacao.get(i).length; j++)
-                u += (entradaClassificacao.get(i)[j]) * vetorPeso[j];
+                u += (entradaClassificacao.get(i)[j]) * vetorPeso[j];            
+            
             y[i] = u < 0 ? -1 : 1;
             u = 0;
         }
@@ -105,7 +108,7 @@ public class Pratica2 {
             imprimePesos(vetorPeso);
 
             //Fase de treinamento
-            vetorPeso = perceptron1Camada(vetorPeso, (float) 0.01, entrada);
+            vetorPeso = adaline(vetorPeso, (float) 0.0025, entrada);
             System.out.println("Vetor de pesos final: ");
             imprimePesos(vetorPeso);
 

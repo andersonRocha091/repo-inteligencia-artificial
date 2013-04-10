@@ -42,10 +42,17 @@ public class Pratica2 {
         return vetorPeso;
     }
 
+    public static void imprimeVetorEQM(ArrayList<Float> EQM){
+        System.out.println("Vetor EQM de tamanho:"+EQM.size());
+        for (int i = 0; i < EQM.size(); i++)
+            System.out.printf("%f,\n ",(float)EQM.get(i));
+    }
+
     public static float[] adaline(float[] vetorPeso, float taxaAprendizagem,
             ArrayList<float[]> entrada) {
         float EQMatual=1;
         float EQMant=Float.POSITIVE_INFINITY;
+        ArrayList<Float> EQM = new ArrayList<Float>();
         float erro = (float)0.000001;
         int epoca = 0;
         float u = 0;
@@ -67,9 +74,11 @@ public class Pratica2 {
                 }
                 EQMatual+=Math.pow(valorDesejado-u,2);
             }
-            EQMatual=EQMatual/(entrada.size());            
+            EQMatual=EQMatual/(entrada.size());
+            EQM.add(EQMatual);
             epoca++;
         }
+        imprimeVetorEQM(EQM);
         System.out.println("O treinamento teve "+epoca+" epocas.");
         epoca = 0;
         return vetorPeso;

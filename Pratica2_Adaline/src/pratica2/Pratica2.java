@@ -78,7 +78,7 @@ public class Pratica2 {
             EQM.add(EQMatual);
             epoca++;
         }
-        imprimeVetorEQM(EQM);
+        //imprimeVetorEQM(EQM);
         System.out.println("O treinamento teve "+epoca+" epocas.");
         epoca = 0;
         return vetorPeso;

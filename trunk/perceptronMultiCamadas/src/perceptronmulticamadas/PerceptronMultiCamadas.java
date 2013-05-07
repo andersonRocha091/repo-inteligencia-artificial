@@ -90,11 +90,21 @@ public class PerceptronMultiCamadas {
         return (float) 0.5 * sigmoid(u) * (1 - sigmoid(u)); // o beta da formula eh 0.5
     }
 
-    public static float[] g(float[] I) {
-        float[] Y = new float[I.length + 1];  // +1 espaco para o bias
-        Y[0] = -1;
-        for (int i = 1; i < I.length + 1; i++) 
-            Y[i] = sigmoid(I[i - 1]);        
+    public static float[] g(float[] I, boolean ultimaCamada) {
+       float[] Y;
+        if(ultimaCamada==false){//flag para verificação se é ultima camada, evitar o bias na saida da ultima camada
+            Y = new float[I.length + 1];  // +1 espaco para o bias
+            Y[0] = -1;
+          for (int i = 1; i < I.length + 1; i++) 
+            Y[i] = sigmoid(I[i - 1]);
+       }
+       else{
+           Y = new float[I.length];  // Sem espaço para p/ bias caso ultima camada
+           for (int i = 0; i < I.length; i++) 
+            Y[i] = sigmoid(I[i]);
+       }
+        
+               
         return Y;
     }
 
@@ -103,21 +113,30 @@ public class PerceptronMultiCamadas {
         float EQM_atual = 1;
         float EQM_anterior = Float.POSITIVE_INFINITY;
         int epocas = 0;
+        boolean last = false;
         ArrayList<float[]> saidasCamadas = new ArrayList<float[]>();
 
         //while(Math.abs(EQM_atual-EQM_anterior)>erro){
         for (int k = 0; k < entrada.size(); k++) {
             // Fase Forward
             float[] I = combinacaoMatrizes(pesosCamadas.get(0),entrada.get(k),qtdCamadaIntermediaria); // primeira camada
-            saidasCamadas.add(g(I));
+            saidasCamadas.add(g(I,last));
             System.out.println("Camada 0: \n" + Arrays.toString(I) + "\n" + "Saída da camada 0: \n" + Arrays.toString(saidasCamadas.get(0)) + "\n");
             // camadas intermediarias e a final
             for (int i = 1; i < pesosCamadas.size(); i++) {
+                if(i==(pesosCamadas.size()-1))
+                    last=true;
                 I = combinacaoMatrizes(pesosCamadas.get(i), saidasCamadas.get(i - 1), qtdNeuronios[i]);
-                saidasCamadas.add(g(I));
+                saidasCamadas.add(g(I,last));
                 System.out.println("Camada " + i + ":\n " + Arrays.toString(I) + "\n" + "Saída da camada " + i + ":\n " + Arrays.toString(saidasCamadas.get(i)) + "\n");
             }
-
+            System.out.println("Todas Saidas:");
+          //  for (int i=0;i<saidasCamadas.size();i++){
+                
+                
+            //    System.out.println(Arrays.toString(saidasCamadas.get(i))+"\n");
+           // }
+            last=false;
             // Fase Backward
             //calculo gradiente local da ultima camada
             for (int i = 0; i < qtdNeuronios[qtdNeuronios.length - 1]; i++) {
@@ -133,7 +152,7 @@ public class PerceptronMultiCamadas {
 
     public static void main(String[] args) throws Exception {
         // Definição dos parâmetros do algoritmo
-        int qtdTreino = 3;
+        int qtdTreino = 1;
         int qtdNeuronios[] = {5, 3}; //
         int qtdEntrada = 5; //4 entradas + 1 entrada do bias
         int qtdValoresDesejados = 3;

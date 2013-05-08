@@ -117,37 +117,52 @@ public class PerceptronMultiCamadas {
         ArrayList<float[]> saidasCamadas = new ArrayList<float[]>();
 
         //while(Math.abs(EQM_atual-EQM_anterior)>erro){
-        for (int k = 0; k < entrada.size(); k++) {
-            // Fase Forward
-            float[] I = combinacaoMatrizes(pesosCamadas.get(0),entrada.get(k),qtdCamadaIntermediaria); // primeira camada
-            saidasCamadas.add(g(I,last));
-            System.out.println("Camada 0: \n" + Arrays.toString(I) + "\n" + "Saída da camada 0: \n" + Arrays.toString(saidasCamadas.get(0)) + "\n");
-            // camadas intermediarias e a final
-            for (int i = 1; i < pesosCamadas.size(); i++) {
-                if(i==(pesosCamadas.size()-1))
-                    last=true;
-                I = combinacaoMatrizes(pesosCamadas.get(i), saidasCamadas.get(i - 1), qtdNeuronios[i]);
+            EQM_anterior=EQM_atual;
+            for (int k = 0; k < entrada.size(); k++) {
+                // Fase Forward
+                float[] I = combinacaoMatrizes(pesosCamadas.get(0),entrada.get(k),qtdCamadaIntermediaria); // primeira camada
                 saidasCamadas.add(g(I,last));
-                System.out.println("Camada " + i + ":\n " + Arrays.toString(I) + "\n" + "Saída da camada " + i + ":\n " + Arrays.toString(saidasCamadas.get(i)) + "\n");
-            }
-            System.out.println("Todas Saidas:");
-          //  for (int i=0;i<saidasCamadas.size();i++){
+                System.out.println("Camada 0: \n" + Arrays.toString(I) + "\n" + "Saída da camada 0: \n" + Arrays.toString(saidasCamadas.get(0)) + "\n");
+                // camadas intermediarias e a final
+                for (int i = 1; i < pesosCamadas.size(); i++) {
+                    if(i==(pesosCamadas.size()-1))
+                        last=true;
+                    I = combinacaoMatrizes(pesosCamadas.get(i), saidasCamadas.get(i - 1), qtdNeuronios[i]);
+                    saidasCamadas.add(g(I,last));
+                    System.out.println("Camada " + i + ":\n " + Arrays.toString(I) + "\n" + "Saída da camada " + i + ":\n " + Arrays.toString(saidasCamadas.get(i)) + "\n");
+                }
+                System.out.println("Todas Saidas:");
+                for (int i=0;i<saidasCamadas.size();i++){
+                    System.out.println(Arrays.toString(saidasCamadas.get(i))+"\n");
+                }
+                last=false;
+
+                // calculo de E(k) e 'quase EQM'
+                float E = E(saidasCamadas.get(saidasCamadas.size()-1),valoresDesejados.get(k));
+                EQM_atual+=E;
+                System.out.println("Erro E(k): "+E+"\n");
+
+                // Fase Backward
+                //calculo gradiente local e atualizacao do vetor de peso da ultima camada
+                for (int i = 0; i < qtdNeuronios[qtdNeuronios.length - 1]; i++) {                        
+                        // calculo gradiente para todos neuronios da ultima camada
+                        //float gradiente = (entrada)
+                }
+                //atualizacao vetor de pesos das outras camadas
                 
-                
-            //    System.out.println(Arrays.toString(saidasCamadas.get(i))+"\n");
-           // }
-            last=false;
-            // Fase Backward
-            //calculo gradiente local da ultima camada
-            for (int i = 0; i < qtdNeuronios[qtdNeuronios.length - 1]; i++) {
-//                    float valorDesejado = entrada.get(k)[]
-//                    float gradiente = (entrada)
+                saidasCamadas.clear();
             }
-        }
-        // calculo EQM
-        epocas++;
+            // calculo EQM
+            EQM_atual/=entrada.size();        
+            epocas++;
         //}
         return pesosCamadas;
+    }
+    public static float E(float[]Y, float[] valoresDesejados){
+        float E=0;        
+        for(int i=0; i<Y.length; i++)
+            E+=Math.pow(valoresDesejados[i]-Y[i], 2);        
+        return E/2;
     }
 
     public static void main(String[] args) throws Exception {
@@ -158,10 +173,14 @@ public class PerceptronMultiCamadas {
         int qtdValoresDesejados = 3;
         int qtdCamadaIntermediaria = 5; // qtd neuronios na 1a camada intermediaria
         float erro = (float) 0.01;
+        
 //        int qtdNeuronios[] = {3, 2, 1}; //
 //        int qtdEntrada = 3; //2 entradas + 1 entrada do bias
+//        int qtdCamadaIntermediaria = 3; // qtd neuronios na 1a camada intermediaria
+//        int qtdValoresDesejados = 1;
 
         // Leitura de arquivos de entrada
+        //leArquivo("treina.txt",qtdValoresDesejados);
         leArquivo("treina.txt",qtdValoresDesejados);
         System.out.println("Matriz valores desejados");
         for (int i = 0; i < valoresDesejados.size(); i++)
@@ -174,13 +193,13 @@ public class PerceptronMultiCamadas {
         for (int i = 0; i < pesosInicial.size(); i++) 
             System.out.println("Matriz de peso inicial " + i + ":\n" + Arrays.deepToString(pesosInicial.get(i)).replaceAll("],", "],\n") + "\n");
         ArrayList<float[][]> pesosAux = new ArrayList<float[][]>(); // variavel auxiliar
-//        float[][] matrizPeso1 = {{(float)0.2,(float)0.4,(float)0.5},
+//       float[][] matrizPeso1 = {{(float)0.2,(float)0.4,(float)0.5},
 //                                  {(float)0.3,(float)0.6,(float)0.7},
 //                                  {(float)0.4,(float)0.8,(float)0.3}};
-//        System.out.println("tamanho pesosCamadas: "+pesosCamadas.size());
-//        System.out.println("tamanho linha matrizPeso1: "+matrizPeso1.length);
-//        System.out.println("Tamanho coluna: "+matrizPeso1[0].length);
-        //pesosCamadasInicial.set(0, matrizPeso1);        
+////        System.out.println("tamanho pesosCamadas: "+pesosCamadas.size());
+////        System.out.println("tamanho linha matrizPeso1: "+matrizPeso1.length);
+////        System.out.println("Tamanho coluna: "+matrizPeso1[0].length);
+//        pesosInicial.set(0, matrizPeso1);        
 
         // Loop principal treinamentos + classificacoes
         for (int k = 0; k < qtdTreino; k++) {

@@ -224,7 +224,7 @@ public class PerceptronMultiCamadas {
 //                System.out.println("Gradiente ultima camada:");
 //                System.out.println(Arrays.toString(gradienteLast)+"\n");
                 
-                for (int i = pesosCamadas.size()-2; i >=0; i--) {                        
+                for (int i = pesosCamadas.size()-2; i >=0; i--) { // o pesosCamas.size - 2 é pra garantir que não começamos pela ultima camada.                       
                     gradiente = gradiente(gradienteLast,pesosCamadas.get(i+1),saidaDerSig.get(i));
                     System.out.println("gradiente camada 0: "+Arrays.toString(gradiente));
                     //pesosCamadas.set(pesosCamadas.size()-1, novopeso(pesosCamadas.get(pesosCamadas.size()-1),taxaAprendizagem , gradienteLast, saidasCamadas.get(saidasCamadas.size()-1)));

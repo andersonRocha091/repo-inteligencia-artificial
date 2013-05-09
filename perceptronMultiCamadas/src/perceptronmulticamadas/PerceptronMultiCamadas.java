@@ -136,8 +136,11 @@ public class PerceptronMultiCamadas {
             for(int j=0; j<pesosCamadaAnterior[0].length;j++){ 
                 acumula[j]=acumula[j]+acumulaAnterior[j];                
             }
-            acumulaAnterior=Arrays.copyOf(acumula, i);
+            acumulaAnterior=(float[]) acumula.clone(); //metodo copia de vetor
         }
+            for(int i=0;i<derivadaCamadaAtual.length;i++){
+                delta[i] = acumula[i]*derivadaCamadaAtual[i];
+            }
         return delta;
         
     }
@@ -215,14 +218,16 @@ public class PerceptronMultiCamadas {
                 //calculo gradiente local e atualizacao do vetor de peso da ultima camada
                 gradienteLast = gradienteLast(valoresDesejados.get(k),saidasCamadas.get(saidasCamadas.size()-1),saidaDerSig.get(saidaDerSig.size()-1));
                 pesosCamadas.set(pesosCamadas.size()-1, novopeso(pesosCamadas.get(pesosCamadas.size()-1),taxaAprendizagem , gradienteLast, saidasCamadas.get(saidasCamadas.size()-1)));
+                
 //                System.out.println("Matriz Ultima camada: ");
 //                imprimeMatriz(pesosCamadas.get(pesosCamadas.size()-1));
 //                System.out.println("Gradiente ultima camada:");
 //                System.out.println(Arrays.toString(gradienteLast)+"\n");
                 
-                for (int i = 0; i < qtdNeuronios[qtdNeuronios.length - 1]; i++) {                        
-                    gradiente = gradiente(valoresDesejados.get(k),saidasCamadas.get(saidasCamadas.size()-1),saidaDerSig.get(saidaDerSig.size()-1));
-                    pesosCamadas.set(pesosCamadas.size()-1, novopeso(pesosCamadas.get(pesosCamadas.size()-1),taxaAprendizagem , gradienteLast, saidasCamadas.get(saidasCamadas.size()-1)));
+                for (int i = pesosCamadas.size()-2; i >=0; i--) {                        
+                    gradiente = gradiente(gradienteLast,pesosCamadas.get(i+1),saidaDerSig.get(i));
+                    System.out.println("gradiente camada 0: "+Arrays.toString(gradiente));
+                    //pesosCamadas.set(pesosCamadas.size()-1, novopeso(pesosCamadas.get(pesosCamadas.size()-1),taxaAprendizagem , gradienteLast, saidasCamadas.get(saidasCamadas.size()-1)));
     //                System.out.println("Matriz Ultima camada: ");
     //                imprimeMatriz(pesosCamadas.get(pesosCamadas.size()-1));
     //                System.out.println("Gradiente ultima camada:");

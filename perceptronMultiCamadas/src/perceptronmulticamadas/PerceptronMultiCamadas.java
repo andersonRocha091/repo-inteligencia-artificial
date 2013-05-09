@@ -86,7 +86,7 @@ public class PerceptronMultiCamadas {
         return (float) (1 / (1 + Math.pow(Math.E, (-0.5 * u)))); // o beta da formula eh 0.5
     }
 
-    public static float dg(float u) {
+    public static float derivadaSigmoid(float u) {
         return (float) 0.5 * sigmoid(u) * (1 - sigmoid(u)); // o beta da formula eh 0.5
     }
 
@@ -107,14 +107,75 @@ public class PerceptronMultiCamadas {
                
         return Y;
     }
+    public static float[] glinha(float[] I){ //calculando a derivada de I
+    
+    float[] Y = new float[I.length];
+    for(int i=0;i<I.length;i++){
+        Y[i] = derivadaSigmoid(I[i]);
+    }
+    return Y;
+    }
+    
+    public static float[] gradienteLast(float[] valoresDesejados, float[] saidas, float[] derivadaI){
+        float[] delta = new float[saidas.length];        
+        for(int i=0;i<saidas.length;i++){
+            delta[i] = (valoresDesejados[i]-saidas[i])*derivadaI[i];
+               }
+        return delta;        
+    }
+    
+    public static float[] gradiente(float[] gradienteAnterior, float[][] pesosCamadaAnterior, float[] derivadaCamadaAtual){
+        float[] delta = new float[derivadaCamadaAtual.length];
+        float[] acumula= new float[pesosCamadaAnterior[0].length];
+        float[] acumulaAnterior= new float[pesosCamadaAnterior[0].length];
+        
+        for(int i=0;i<pesosCamadaAnterior.length;i++){
+           for(int j=0; j<pesosCamadaAnterior[0].length;j++){           
+               acumula[j]=pesosCamadaAnterior[i][j]*gradienteAnterior[i];
+            }
+            for(int j=0; j<pesosCamadaAnterior[0].length;j++){ 
+                acumula[j]=acumula[j]+acumulaAnterior[j];                
+            }
+            acumulaAnterior=Arrays.copyOf(acumula, i);
+        }
+        return delta;
+        
+    }
+    
+    public static float[][] novopeso(float[][] pesoAnterior, float taxaAprendizagem, float[] gradiente, float[] saidaCamada){
+    
+        float[][] pesosAtualizado = new float[pesoAnterior.length][pesoAnterior[0].length];
+    
+        for(int i=0; i<pesoAnterior.length;i++){
+            for(int j=0;j<pesoAnterior[0].length;j++){
+                pesosAtualizado[i][j] = pesoAnterior[i][j]+taxaAprendizagem*gradiente[i]*saidaCamada[i];
+            }
+        }
+    
+    
+    return pesosAtualizado;
+    }
+    public static void imprimeMatriz(float[][] matriz){
+        
+    for(int i=0; i<matriz.length;i++){
+        for(int j=0;j<matriz[0].length;j++){
+            System.out.print(" "+matriz[i][j]);
+        }
+        System.out.println();
+    }
+    }
 
     public static ArrayList<float[][]> backpropagation(ArrayList<float[][]> pesosCamadas,
-            float erro, int[] qtdNeuronios, int qtdValoresDesejados, int qtdCamadaIntermediaria) {
+            float erro, int[] qtdNeuronios, int qtdValoresDesejados, int qtdCamadaIntermediaria,
+            float taxaAprendizagem) {
         float EQM_atual = 1;
         float EQM_anterior = Float.POSITIVE_INFINITY;
         int epocas = 0;
         boolean last = false;
         ArrayList<float[]> saidasCamadas = new ArrayList<float[]>();
+        ArrayList<float[]> saidaDerSig = new ArrayList<float[]>();
+        float[] gradienteLast;
+        float[] gradiente;
 
         //while(Math.abs(EQM_atual-EQM_anterior)>erro){
             EQM_anterior=EQM_atual;
@@ -122,6 +183,7 @@ public class PerceptronMultiCamadas {
                 // Fase Forward
                 float[] I = combinacaoMatrizes(pesosCamadas.get(0),entrada.get(k),qtdCamadaIntermediaria); // primeira camada
                 saidasCamadas.add(g(I,last));
+                saidaDerSig.add(glinha(I)); //calculando deriva g'(u)
                 System.out.println("Camada 0: \n" + Arrays.toString(I) + "\n" + "Saída da camada 0: \n" + Arrays.toString(saidasCamadas.get(0)) + "\n");
                 // camadas intermediarias e a final
                 for (int i = 1; i < pesosCamadas.size(); i++) {
@@ -129,7 +191,11 @@ public class PerceptronMultiCamadas {
                         last=true;
                     I = combinacaoMatrizes(pesosCamadas.get(i), saidasCamadas.get(i - 1), qtdNeuronios[i]);
                     saidasCamadas.add(g(I,last));
+                    saidaDerSig.add(glinha(I));
                     System.out.println("Camada " + i + ":\n " + Arrays.toString(I) + "\n" + "Saída da camada " + i + ":\n " + Arrays.toString(saidasCamadas.get(i)) + "\n");
+                    for(int j=0; j<saidaDerSig.size(); j++)
+                    System.out.println("valor da derivada da Sigmoid(I) "+j+":"+Arrays.toString(saidaDerSig.get(j)));
+                            
                 }
                 System.out.println("Todas Saidas:");
                 for (int i=0;i<saidasCamadas.size();i++){
@@ -141,15 +207,31 @@ public class PerceptronMultiCamadas {
                 float E = E(saidasCamadas.get(saidasCamadas.size()-1),valoresDesejados.get(k));
                 EQM_atual+=E;
                 System.out.println("Erro E(k): "+E+"\n");
-
+                
+                //System.out.println("saida ultima camada: "+Arrays.toString(saidasCamadas.get(saidasCamadas.size()-1)));
+                //System.out.println("derivada ultima camada: "+Arrays.toString(saidaDerSig.get(saidaDerSig.size()-1)));
+                
                 // Fase Backward
                 //calculo gradiente local e atualizacao do vetor de peso da ultima camada
-                for (int i = 0; i < qtdNeuronios[qtdNeuronios.length - 1]; i++) {                        
-                        // calculo gradiente para todos neuronios da ultima camada
-                        //float gradiente = (entrada)
-                }
-                //atualizacao vetor de pesos das outras camadas
+                gradienteLast = gradienteLast(valoresDesejados.get(k),saidasCamadas.get(saidasCamadas.size()-1),saidaDerSig.get(saidaDerSig.size()-1));
+                pesosCamadas.set(pesosCamadas.size()-1, novopeso(pesosCamadas.get(pesosCamadas.size()-1),taxaAprendizagem , gradienteLast, saidasCamadas.get(saidasCamadas.size()-1)));
+//                System.out.println("Matriz Ultima camada: ");
+//                imprimeMatriz(pesosCamadas.get(pesosCamadas.size()-1));
+//                System.out.println("Gradiente ultima camada:");
+//                System.out.println(Arrays.toString(gradienteLast)+"\n");
                 
+                for (int i = 0; i < qtdNeuronios[qtdNeuronios.length - 1]; i++) {                        
+                    gradiente = gradiente(valoresDesejados.get(k),saidasCamadas.get(saidasCamadas.size()-1),saidaDerSig.get(saidaDerSig.size()-1));
+                    pesosCamadas.set(pesosCamadas.size()-1, novopeso(pesosCamadas.get(pesosCamadas.size()-1),taxaAprendizagem , gradienteLast, saidasCamadas.get(saidasCamadas.size()-1)));
+    //                System.out.println("Matriz Ultima camada: ");
+    //                imprimeMatriz(pesosCamadas.get(pesosCamadas.size()-1));
+    //                System.out.println("Gradiente ultima camada:");
+    //                System.out.println(Arrays.toString(gradienteLast)+"\n");
+                
+                }
+                
+                //atualizacao vetor de pesos das outras camadas
+                saidaDerSig.clear();
                 saidasCamadas.clear();
             }
             // calculo EQM
@@ -173,6 +255,7 @@ public class PerceptronMultiCamadas {
         int qtdValoresDesejados = 3;
         int qtdCamadaIntermediaria = 5; // qtd neuronios na 1a camada intermediaria
         float erro = (float) 0.01;
+        float taxaAprendizagem = (float)0.1;
         
 //        int qtdNeuronios[] = {3, 2, 1}; //
 //        int qtdEntrada = 3; //2 entradas + 1 entrada do bias
@@ -207,7 +290,7 @@ public class PerceptronMultiCamadas {
             System.out.println("---------  Treinamento "+k+"  -----------");
 
             // Fase de Treinamento backpropagation normal
-            pesosAux = backpropagation(pesosInicial, erro, qtdNeuronios, qtdValoresDesejados, qtdCamadaIntermediaria);
+            pesosAux = backpropagation(pesosInicial, erro, qtdNeuronios, qtdValoresDesejados, qtdCamadaIntermediaria, taxaAprendizagem);
 
             // Classificacao do backpropagation normal
 

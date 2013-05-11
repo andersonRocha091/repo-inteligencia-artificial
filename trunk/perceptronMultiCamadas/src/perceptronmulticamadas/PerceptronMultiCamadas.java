@@ -8,33 +8,64 @@ import java.util.Arrays;
 
 /**
  *
- * @author Anderson
+ * @author Anderson e Maria
  */
 public class PerceptronMultiCamadas {
 
     // variaveis globais
     private static ArrayList<float[]> entrada;
+    private static ArrayList<float[]> entradaTeste;
     private static ArrayList<float[]> valoresDesejados;
+    private static ArrayList<float[]> valoresDesejadosTeste;
 
-    public static int[] classificacaoAmostras(ArrayList<float[]> entradaClassificacao,
-            float[] vetorPeso) {
-        float u = 0;
-        int[] y = new int[entradaClassificacao.size()];
-        for (int i = 0; i < entradaClassificacao.size(); i++) { //Classificação das amostras;
-            for (int j = 0; j < entradaClassificacao.get(i).length; j++) {
-                u += (entradaClassificacao.get(i)[j]) * vetorPeso[j];
-            }
-            y[i] = u < 0 ? -1 : 1;
-            u = 0;
-        }
-        return y;
+    // método que converte uma ArrayList<float[]> para String formato impressao
+    public static String arraylistToString(ArrayList<float[]> resultado) {
+         String resultadoString = "";
+         for (float[] y : resultado) {
+             resultadoString += ""+Arrays.toString(y)+"\n";
+         }
+         return resultadoString;
     }
+    
+    // método que converte uma ArrayList<float[][]> para String formato impressao
+    public static String arraylistMatrizToString(ArrayList<float[][]> resultado) {
+         String resultadoString = "";
+         for (float[][] y : resultado) {
+             resultadoString += ""+Arrays.deepToString(y).replaceAll("],","],\n").replaceAll("]]","],\n")+"\n";
+         }
+         return resultadoString;
+    }
+    
+    public static ArrayList<float[]> classificacaoAmostras(ArrayList<float[][]> pesosCamadas,int[] qtdNeuronios, int qtdCamadaIntermediaria) {                
+        ArrayList<float[]> saidasCamadas = new ArrayList<float[]>();
+        ArrayList<float[]> saidaClassificacao = new ArrayList<float[]>();
+        ArrayList<float[]> derivadaSigmoidI = new ArrayList<float[]>();
+        boolean ehUltimaCamada = false;        
+        for (int k = 0; k < entradaTeste.size(); k++) { //laco para cada padrao k de amostras
+            //Fase forward backpropagation
+            float[] I = combinacaoMatrizes(pesosCamadas.get(0), entradaTeste.get(k), qtdCamadaIntermediaria); // primeira camada
+                saidasCamadas.add(g(I, ehUltimaCamada));
+                derivadaSigmoidI.add(glinha(I)); //calculando g'(I) para a primeira camada
+                //System.out.println("Camada 0: \n" + Arrays.toString(I) + "\n" + "Saída da camada 0: \n" + Arrays.toString(saidasCamadas.get(0)) + "\n");
+                // camadas intermediarias e a final
+                for (int i = 1; i < pesosCamadas.size(); i++) {
+                    if (i == (pesosCamadas.size() - 1)) {
+                        ehUltimaCamada = true;
+                    }
+                    I = combinacaoMatrizes(pesosCamadas.get(i), saidasCamadas.get(i - 1), qtdNeuronios[i]);
+                    saidasCamadas.add(g(I, ehUltimaCamada));
+                    derivadaSigmoidI.add(glinha(I)); //calculando g'(I) para as camadas intermediarias e primeira
+                    //System.out.println("Camada " + i + ":\n " + Arrays.toString(I) + "\n" + "Saída da camada " + i + ":\n " + Arrays.toString(saidasCamadas.get(i)) + "\n");                    
+                    for (int j = 0; j < derivadaSigmoidI.size(); j++) {
+                         //System.out.println("G'(I) da camada "+j+":"+Arrays.toString(derivadaSigmoidI.get(j)));
+                    }
+                }
+                ehUltimaCamada = false;
+                saidaClassificacao.add(saidasCamadas.get(saidasCamadas.size()-1));
 
-    public static void exibirClassificacao(int[] y) {
-        for (int i = 0; i < y.length; i++) {
-            System.out.println("Amostra:" + (i + 1) + " " + "Classificação:" + y[i]); //exibição para cada treino
         }
-    }
+        return saidaClassificacao; //retorna a saída da última camada
+    }   
 
     public static void leArquivo(String path, int qtdValoresDesejados) throws Exception {
         BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -45,8 +76,8 @@ public class PerceptronMultiCamadas {
         String temp;
         while ((temp = reader.readLine()) != null) {
             line = temp.split("\\ ");
-            float[] lineFloat = new float[line.length];
-            for (int i = 0; i < line.length - qtdValoresDesejados + 1; i++) {
+            float[] lineFloat = new float[line.length- qtdValoresDesejados];
+            for (int i = 0; i < line.length - qtdValoresDesejados; i++) {
                 lineFloat[i] = Float.parseFloat(line[i]);
             }
             entrada.add(lineFloat);
@@ -56,6 +87,29 @@ public class PerceptronMultiCamadas {
                 lineFloat[j++] = Float.parseFloat(line[i]);
             }
             valoresDesejados.add(lineFloat);
+        }
+    }
+    
+    public static void leArquivoTeste(String path, int qtdValoresDesejados) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                new FileInputStream(path)));
+        entradaTeste = new ArrayList<float[]>();
+        valoresDesejadosTeste = new ArrayList<float[]>();
+        String[] line = null;
+        String temp;
+        while ((temp = reader.readLine()) != null) {
+            line = temp.split("\\ ");
+            float[] lineFloat = new float[line.length- qtdValoresDesejados];
+            for (int i = 0; i < line.length - qtdValoresDesejados; i++) {
+                lineFloat[i] = Float.parseFloat(line[i]);
+            }
+            entradaTeste.add(lineFloat);
+            lineFloat = new float[qtdValoresDesejados];
+            int j = 0;
+            for (int i = line.length - qtdValoresDesejados; i < line.length; i++) {
+                lineFloat[j++] = Float.parseFloat(line[i]);
+            }
+            valoresDesejadosTeste.add(lineFloat);
         }
     }
 
@@ -73,7 +127,7 @@ public class PerceptronMultiCamadas {
         ArrayList<float[][]> pesosCamadas = new ArrayList<float[][]>();
         pesosCamadas.add(gerarMatrizPeso(qtdNeuronios[0], qtdEntrada)); //adiciona a matriz de peso da primeira camada
         for (int i = 1; i < camadas; i++) {
-            pesosCamadas.add(gerarMatrizPeso(qtdNeuronios[i], qtdNeuronios[i - 1]));
+            pesosCamadas.add(gerarMatrizPeso(qtdNeuronios[i], qtdNeuronios[i - 1]+1));
         }
         return pesosCamadas;
     }
@@ -148,11 +202,20 @@ public class PerceptronMultiCamadas {
         return delta;
     }
 
-    public static float[][] novoPeso(float[][] pesoAnterior, float taxaAprendizagem, float[] gradiente, float[] saidaCamada) {
+    public static float[][] novoPeso(float[][] pesoAnterior, float taxaAprendizagem,
+            float[] gradiente, float[] saidaCamada, boolean comMomentum) {
         float[][] pesosAtualizado = new float[pesoAnterior.length][pesoAnterior[0].length];
         for (int i = 0; i < pesoAnterior.length; i++) {
             for (int j = 0; j < pesoAnterior[0].length; j++) {
-                pesosAtualizado[i][j] = pesoAnterior[i][j] + taxaAprendizagem * gradiente[i] * saidaCamada[i];
+                if(comMomentum){ // adiciona fator momentum na atualizacao
+                    // Wji(t+1) = Wji(t) + α (Wji(t) - Wji(t-1)) + η . δj . Yj
+                    // 0 ≤ α ≥ 0,9
+                    
+                    pesosAtualizado[i][j] = pesoAnterior[i][j] + taxaAprendizagem * gradiente[i] * saidaCamada[i];
+                }
+                else{
+                    pesosAtualizado[i][j] = pesoAnterior[i][j] + taxaAprendizagem * gradiente[i] * saidaCamada[i];
+                }
             }
         }
         return pesosAtualizado;
@@ -168,7 +231,7 @@ public class PerceptronMultiCamadas {
 
     public static ArrayList<float[][]> backpropagation(ArrayList<float[][]> pesosCamadas,
             float erro, int[] qtdNeuronios, int qtdValoresDesejados, int qtdCamadaIntermediaria,
-            float taxaAprendizagem) {
+            float taxaAprendizagem, boolean comMomentum) {
         float EQM_atual = 1;
         float EQM_anterior = Float.POSITIVE_INFINITY;
         int epocas = 0;
@@ -185,7 +248,7 @@ public class PerceptronMultiCamadas {
                 float[] I = combinacaoMatrizes(pesosCamadas.get(0), entrada.get(k), qtdCamadaIntermediaria); // primeira camada
                 saidasCamadas.add(g(I, ehUltimaCamada));
                 derivadaSigmoidI.add(glinha(I)); //calculando g'(I) para a primeira camada
-                System.out.println("Camada 0: \n" + Arrays.toString(I) + "\n" + "Saída da camada 0: \n" + Arrays.toString(saidasCamadas.get(0)) + "\n");
+                //System.out.println("Camada 0: \n" + Arrays.toString(I) + "\n" + "Saída da camada 0: \n" + Arrays.toString(saidasCamadas.get(0)) + "\n");
                 // camadas intermediarias e a final
                 for (int i = 1; i < pesosCamadas.size(); i++) {
                     if (i == (pesosCamadas.size() - 1)) {
@@ -194,37 +257,40 @@ public class PerceptronMultiCamadas {
                     I = combinacaoMatrizes(pesosCamadas.get(i), saidasCamadas.get(i - 1), qtdNeuronios[i]);
                     saidasCamadas.add(g(I, ehUltimaCamada));
                     derivadaSigmoidI.add(glinha(I)); //calculando g'(I) para as camadas intermediarias e primeira
-                    System.out.println("Camada " + i + ":\n " + Arrays.toString(I) + "\n" + "Saída da camada " + i + ":\n " + Arrays.toString(saidasCamadas.get(i)) + "\n");                    
+                    //System.out.println("Camada " + i + ":\n " + Arrays.toString(I) + "\n" + "Saída da camada " + i + ":\n " + Arrays.toString(saidasCamadas.get(i)) + "\n");                    
                     for (int j = 0; j < derivadaSigmoidI.size(); j++) {
-                         System.out.println("G'(I) da camada "+j+":"+Arrays.toString(derivadaSigmoidI.get(j)));
+                         //System.out.println("G'(I) da camada "+j+":"+Arrays.toString(derivadaSigmoidI.get(j)));
                     }
                 }
                 ehUltimaCamada = false;
+                
+//                System.out.println("Saida das camadas da rede para amostra "+k+"\n: "+arraylistToString(saidasCamadas)+"\n");
+//                System.out.println("Matrizes de Pesos para amostra "+k+"\n: "+arraylistMatrizToString(pesosCamadas)+"\n");
 
                 // calculo de E(k) e 'quase EQM'
                 float E = E(saidasCamadas.get(saidasCamadas.size() - 1), valoresDesejados.get(k));
                 EQM_atual += E;
-                System.out.println("\nErro E(k): " + E + "\n");
+                //System.out.println("\nErro E(k): " + E + "\n");
 
                 // Fase Backward                
                 //calculo gradiente ultima camada e atualizacao de pesos da ultima camada
                 gradienteLast = gradienteUltimaCamada(valoresDesejados.get(k), saidasCamadas.get(saidasCamadas.size()-1), derivadaSigmoidI.get(derivadaSigmoidI.size()- 1));
-                System.out.println("Gradiente ultima camada:\n"+Arrays.toString(gradienteLast));
-                pesosCamadas.set(pesosCamadas.size() - 1, novoPeso(pesosCamadas.get(pesosCamadas.size()-1), taxaAprendizagem, gradienteLast, saidasCamadas.get(saidasCamadas.size()-2)));
-                System.out.println("Matriz pesos ultima camada atualizada: \n"+Arrays.deepToString(pesosCamadas.get(pesosCamadas.size()-1)).replaceAll("],", "],\n")+"\n");
+                //System.out.println("Gradiente ultima camada:\n"+Arrays.toString(gradienteLast));
+                pesosCamadas.set(pesosCamadas.size() - 1, novoPeso(pesosCamadas.get(pesosCamadas.size()-1), taxaAprendizagem, gradienteLast, saidasCamadas.get(saidasCamadas.size()-2),comMomentum));
+                //System.out.println("Matriz pesos ultima camada atualizada: \n"+Arrays.deepToString(pesosCamadas.get(pesosCamadas.size()-1)).replaceAll("],", "],\n")+"\n");
                 //calculo gradiente camadas intermediarias e atualizacao de pesos camadas intermediarias
                 for (int i = pesosCamadas.size() - 2; i >= 1; i--) { // o pesosCamas.size - 2 é pra garantir que não começamos pela ultima camada.
                     gradiente = gradienteCamadasIntermediarias(gradienteLast, pesosCamadas.get(i + 1), derivadaSigmoidI.get(i));
-                    System.out.println("Gradiente camada "+i+"\n: " + Arrays.toString(gradiente));
-                    pesosCamadas.set(i, novoPeso(pesosCamadas.get(i), taxaAprendizagem, gradiente, saidasCamadas.get(i-1)));
-                    System.out.println("Matriz pesos camada "+i+" atualizada:\n"+Arrays.deepToString(pesosCamadas.get(i)).replaceAll("],", "],\n"));
+                    //System.out.println("Gradiente camada "+i+"\n: " + Arrays.toString(gradiente));
+                    pesosCamadas.set(i, novoPeso(pesosCamadas.get(i), taxaAprendizagem, gradiente, saidasCamadas.get(i-1),comMomentum));
+                    //System.out.println("Matriz pesos camada "+i+" atualizada:\n"+Arrays.deepToString(pesosCamadas.get(i)).replaceAll("],", "],\n"));
                     gradienteLast = gradiente; // guarda o ultimo gradiente para o calculo do proximo
                 }
                 //calculo gradiente da primeira camada e atualizacao de pesos da primeira camada
                 gradiente = gradienteCamadasIntermediarias(gradienteLast, pesosCamadas.get(1), derivadaSigmoidI.get(0));
-                System.out.println("Gradiente 1a camada:\n" + Arrays.toString(gradiente));
-                pesosCamadas.set(0, novoPeso(pesosCamadas.get(0), taxaAprendizagem, gradiente, entrada.get(k)));
-                System.out.println("Matriz pesos 1a camada atualizada:\n"+Arrays.deepToString(pesosCamadas.get(0)).replaceAll("],", "],\n")+"\n");
+                //System.out.println("Gradiente 1a camada:\n" + Arrays.toString(gradiente));
+                pesosCamadas.set(0, novoPeso(pesosCamadas.get(0), taxaAprendizagem, gradiente, entrada.get(k),comMomentum));
+                //System.out.println("Matriz pesos 1a camada atualizada:\n"+Arrays.deepToString(pesosCamadas.get(0)).replaceAll("],", "],\n")+"\n");
 
                 //atualizacao vetor de pesos das outras camadas
                 derivadaSigmoidI.clear();
@@ -232,24 +298,97 @@ public class PerceptronMultiCamadas {
             }
             // calculo EQM
             EQM_atual /= entrada.size();
-            System.out.println("EQM Atual: "+EQM_atual);
-            System.out.println("EQM Anterior: "+EQM_anterior+"\n");
+            //System.out.println("EQM Atual: "+EQM_atual);
+            //System.out.println("EQM Anterior: "+EQM_anterior+"\n");
             epocas++;
         }
-        System.out.println("------------- O treinamento teve "+epocas+" epocas.---------------\n");
+        System.out.println("O treinamento teve "+epocas+" epocas.\n");
         return pesosCamadas;
     }
+    
+    // Pos-processa as saidas dos testes para normaliza-las
+    public static ArrayList<float[]> posProcessar(ArrayList<float[]> resultadoAntes){
+        ArrayList<float[]> resultadoPosProcessado = new ArrayList<float[]>();
+        float[] novo;
+        for (int i = 0; i < resultadoAntes.size(); i++) {
+            novo = new float[resultadoAntes.get(0).length];
+            for (int j = 0; j < resultadoAntes.get(0).length; j++) {
+                // 1 , se y i ≥ 0.5                    
+                if(resultadoAntes.get(i)[j] >= (float) 0.5){
+                    novo[j] = 1;
+                }
+                // 0, se y i < 0.5
+                else{
+                    novo[j] = 0;
+                }                
+            }  
+            resultadoPosProcessado.add(novo);
+        }
+        return resultadoPosProcessado;
+    }
 
-    public static void main(String[] args) throws Exception {
-
+    public static void main(String[] args) throws Exception {        
         // Definição dos parâmetros do algoritmo
-        int qtdTreino = 1;
+        int qtdTreino = 3;
         int qtdNeuronios[] = {5, 3}; //
         int qtdEntrada = 5; //4 entradas + 1 entrada do bias
         int qtdValoresDesejados = 3;
         int qtdNeuronios1aCamadaIntermediaria = 5; // qtd neuronios na 1a camada intermediaria
-        float erro = (float) 0.01; // MUDAR PARA 0.000001 erro da pratica 3
+        float erro = (float) 0.000001;
         float taxaAprendizagem = (float) 0.1;
+
+        // Leitura de arquivos de entrada        
+        leArquivo("treina.txt", qtdValoresDesejados);
+        leArquivoTeste("teste.txt", qtdValoresDesejados);       
+
+        // Variaveis para armazenar saidas do treinamento e da classificacao
+        ArrayList<float[][]> resultadoBackNormal; // arraylist pesos resultado treinamento normal
+        ArrayList<float[][]> resultadoBackMomentum; // arraylist pesos resultado treinamento momentum
+        ArrayList<float[]> resultadoClassificacaoNormal; // saida da ultima camada rede teste
+        ArrayList<float[]> resultadoClassificacaoMomentum; //saida da ultima camada rede teste momentum
+                
+        // Loop principal treinamentos + classificacoes      
+        for (int k = 0; k < qtdTreino; k++) {            
+            // Inicializacao das matrizes de pesos         
+            ArrayList<float[][]> pesosInicial = inicializarRede(qtdNeuronios, qtdNeuronios.length, qtdEntrada);  
+            System.out.println("Matriz peso inicial:\n"+arraylistMatrizToString(pesosInicial)+"\n");
+            
+            System.out.println("\n---------  Treinamento " + k + "  -----------\n");            
+            System.out.println("Treinamento Backpropagation Normal\n");
+            // Fase de Treinamento backpropagation normal; new ArrayList...pesosInicial para passar por valor e não referencia
+            resultadoBackNormal = backpropagation(new ArrayList<float[][]>(pesosInicial), erro, qtdNeuronios, qtdValoresDesejados, qtdNeuronios1aCamadaIntermediaria, taxaAprendizagem, false); 
+            // Exibe resultado do treinamento
+            System.out.println("Resultado Treinamento Back Normal:\n"+arraylistMatrizToString(resultadoBackNormal)+"\n");
+            // Classificacao do backpropagation normal
+            resultadoClassificacaoNormal = classificacaoAmostras(resultadoBackNormal, qtdNeuronios, qtdNeuronios1aCamadaIntermediaria);
+            // Exibe Classificacao Back Normal
+            System.out.println("Resultado Classificacao Back Normal:\n"+arraylistToString(resultadoClassificacaoNormal)+"\n");
+            // Exibe Classificacao Pos-processada Back Momentum
+            System.out.println("Resultado Normal PosProcessado:\n"+arraylistToString(posProcessar(resultadoClassificacaoNormal))+"\n");
+            
+//            System.out.println("\nMatriz peso antes do momentum:\n"+arraylistMatrizToString(pesosInicial)+"\n");
+            System.out.println("Treinamento Backpropagation com Momentum\n");
+            // Fase de Treinamento do backpropagation com momentum; new ArrayList...pesosInicial para passar por valor e não referencia
+            resultadoBackMomentum = backpropagation(new ArrayList<float[][]>(pesosInicial), erro, qtdNeuronios, qtdValoresDesejados, qtdNeuronios1aCamadaIntermediaria, taxaAprendizagem, true);
+            // Exibe resultado do treinamento
+            System.out.println("Resultado Treinamento Back Momentum:\n"+arraylistMatrizToString(resultadoBackMomentum)+"\n");
+            // Classificacao do backpropagation com momentum
+            resultadoClassificacaoMomentum = classificacaoAmostras(resultadoBackMomentum, qtdNeuronios, qtdNeuronios1aCamadaIntermediaria);
+            // Exibe Classificacao Back Momentum
+            System.out.println("Resultado Classificacao Back Momentum:\n"+arraylistToString(resultadoClassificacaoMomentum)+"\n");
+            // Exibe Classificacao Pos-processada Back Momentum
+            System.out.println("Resultado Momentum PosProcessado:\n"+arraylistToString(posProcessar(resultadoClassificacaoMomentum))+"\n");
+        }        
+    }
+    
+    public static int[] montaVetorCamadas(int k,int[] qtdCamadaIntermediaria,int qtdUltimaCamada){
+        int[] qtdNeuronios = new int[2]; // quantidade de camadas da rede
+        qtdNeuronios[0] = qtdCamadaIntermediaria[k];
+        qtdNeuronios[1] = qtdUltimaCamada;
+        return qtdNeuronios;
+    }
+}
+
 
         // parametros do caso de teste slide Angelo
 //        int qtdTreino = 1;
@@ -261,36 +400,5 @@ public class PerceptronMultiCamadas {
 //        float erro = (float) 0.01;
 //        float taxaAprendizagem = (float) 0.1;
 
-        // Leitura de arquivos de entrada        
-        leArquivo("treina.txt", qtdValoresDesejados);
-        System.out.println("Matriz valores desejados: ");
-        for (int j = 0; j < valoresDesejados.size(); j++) {
-            System.out.println(Arrays.toString(valoresDesejados.get(j)));
-        }
-
-//        leArquivo("teste.txt");
-//        leArquivo("treinamento.txt",qtdValoresDesejados);
-
-        // Inicializacao das matrizes de pesos 
-        ArrayList<float[][]> pesosInicial = inicializarRede(qtdNeuronios, qtdNeuronios.length, qtdEntrada);
-        for (int i = 0; i < pesosInicial.size(); i++) {
-            // metodo para imprimir matriz Arrays.deepToString
-            System.out.println("\nMatriz de peso inicial " + i + ":\n" + Arrays.deepToString(pesosInicial.get(i)).replaceAll("],", "],\n"));
-        }
-        ArrayList<float[][]> pesosAux = new ArrayList<float[][]>(); // variavel auxiliar
 //       float[][] matrizPeso1 = {{(float)0.2,(float)0.4,(float)0.5},{(float)0.3,(float)0.6,(float)0.7},{(float)0.4,(float)0.8,(float)0.3}};
-//        pesosInicial.set(0, matrizPeso1);        
-
-        // Loop principal treinamentos + classificacoes
-        int k;
-        for (k = 0; k < qtdTreino; k++) {
-            System.out.println("\n---------  Treinamento " + k + "  -----------");
-            // Fase de Treinamento backpropagation normal
-            pesosAux = backpropagation(pesosInicial, erro, qtdNeuronios, qtdValoresDesejados, qtdNeuronios1aCamadaIntermediaria, taxaAprendizagem);
-            // Classificacao do backpropagation normal
-            // Fase de Treinamento do backpropagation com momentum
-            // Classificacao do backpropagation com momentum
-        }
-        System.out.println("Houveram "+k+" treinamentos.");
-    }    
-}
+//        pesosInicial.set(0, matrizPeso1);

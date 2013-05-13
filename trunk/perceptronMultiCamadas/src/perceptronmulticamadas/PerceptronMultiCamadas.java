@@ -196,13 +196,14 @@ public class PerceptronMultiCamadas {
         float[] acumulaAnterior = new float[pesosCamadaAnterior[0].length];
         for (int i = 0; i < pesosCamadaAnterior.length; i++) {
             for (int j = 0; j < pesosCamadaAnterior[0].length; j++) {
-                acumula[j] = pesosCamadaAnterior[i][j] * gradienteAnterior[i];
+                acumula[i] += pesosCamadaAnterior[i][j] * gradienteAnterior[i];
             }
             for (int j = 0; j < pesosCamadaAnterior[0].length; j++) {
                 acumula[j] = acumula[j] + acumulaAnterior[j];
             }
             acumulaAnterior = (float[]) acumula.clone(); //metodo copia de vetor
         }
+        
         for (int i = 0; i < derivadaCamadaAtual.length; i++) {
             delta[i] = acumula[i] * derivadaCamadaAtual[i];
         }
@@ -221,7 +222,7 @@ public class PerceptronMultiCamadas {
                     pesosAtualizado[i][j] = pesoAnterior[i][j] + taxaAprendizagem * gradiente[i] * saidaCamada[i];
                 }
                 else{
-                    pesosAtualizado[i][j] = pesoAnterior[i][j] + taxaAprendizagem * gradiente[i] * saidaCamada[i];
+                    pesosAtualizado[i][j] = pesoAnterior[i][j] + taxaAprendizagem * gradiente[i] * saidaCamada[j];
                 }
             }
         }
@@ -252,8 +253,11 @@ public class PerceptronMultiCamadas {
             EQM_anterior = EQM_atual;
             for (int k = 0; k < entrada.size(); k++) {
                 // Fase Forward
+             //   System.out.println("entrada0: "+Arrays.toString(entrada.get(k)));
                 float[] I = combinacaoMatrizes(pesosCamadas.get(0), entrada.get(k), qtdCamadaIntermediaria); // primeira camada
+             // System.out.println("saida I0:"+Arrays.toString(I));
                 saidasCamadas.add(g(I, ehUltimaCamada));
+            //  System.out.println("saida Y(I0):"+Arrays.toString(saidasCamadas.get(0)));
                 derivadaSigmoidI.add(glinha(I)); //calculando g'(I) para a primeira camada
                 //System.out.println("Camada 0: \n" + Arrays.toString(I) + "\n" + "Saída da camada 0: \n" + Arrays.toString(saidasCamadas.get(0)) + "\n");
                 // camadas intermediarias e a final
@@ -262,12 +266,14 @@ public class PerceptronMultiCamadas {
                         ehUltimaCamada = true;
                     }
                     I = combinacaoMatrizes(pesosCamadas.get(i), saidasCamadas.get(i - 1), qtdNeuronios[i]);
+              //  System.out.println("saida I"+i+Arrays.toString(I));
                     saidasCamadas.add(g(I, ehUltimaCamada));
+             // System.out.println("saida Y(I"+i+"): "+Arrays.toString(saidasCamadas.get(i)));    
                     derivadaSigmoidI.add(glinha(I)); //calculando g'(I) para as camadas intermediarias e primeira
                     //System.out.println("Camada " + i + ":\n " + Arrays.toString(I) + "\n" + "Saída da camada " + i + ":\n " + Arrays.toString(saidasCamadas.get(i)) + "\n");                    
-                    for (int j = 0; j < derivadaSigmoidI.size(); j++) {
+//                    for (int j = 0; j < derivadaSigmoidI.size(); j++) {
                          //System.out.println("G'(I) da camada "+j+":"+Arrays.toString(derivadaSigmoidI.get(j)));
-                    }
+//                    }
                 }
                 ehUltimaCamada = false;
                 
@@ -276,28 +282,33 @@ public class PerceptronMultiCamadas {
 
                 // calculo de E(k) e 'quase EQM'
                 float E = E(saidasCamadas.get(saidasCamadas.size() - 1), valoresDesejados.get(k));
+               // System.out.println("Y(I1): "+Arrays.toString(saidasCamadas.get(saidasCamadas.size() - 1)));
+               // System.out.println("desejados: "+Arrays.toString(valoresDesejados.get(k)));
+               // System.out.println("Erro e(k):"+E);
                 EQM_atual += E;
                 //System.out.println("\nErro E(k): " + E + "\n");
 
                 // Fase Backward                
                 //calculo gradiente ultima camada e atualizacao de pesos da ultima camada
                 gradienteLast = gradienteUltimaCamada(valoresDesejados.get(k), saidasCamadas.get(saidasCamadas.size()-1), derivadaSigmoidI.get(derivadaSigmoidI.size()- 1));
+               // System.out.println("Gradiente Ultima Camada:"+Arrays.toString(gradienteLast));
                 //System.out.println("Gradiente ultima camada:\n"+Arrays.toString(gradienteLast));
                 pesosCamadas.set(pesosCamadas.size() - 1, novoPeso(pesosCamadas.get(pesosCamadas.size()-1), taxaAprendizagem, gradienteLast, saidasCamadas.get(saidasCamadas.size()-2),comMomentum));
-                //System.out.println("Matriz pesos ultima camada atualizada: \n"+Arrays.deepToString(pesosCamadas.get(pesosCamadas.size()-1)).replaceAll("],", "],\n")+"\n");
+               //  System.out.println("Matriz pesos ultima camada atualizada: \n"+Arrays.deepToString(pesosCamadas.get(pesosCamadas.size()-1)).replaceAll("],", "],\n")+"\n");
                 //calculo gradiente camadas intermediarias e atualizacao de pesos camadas intermediarias
                 for (int i = pesosCamadas.size() - 2; i >= 1; i--) { // o pesosCamas.size - 2 é pra garantir que não começamos pela ultima camada.
                     gradiente = gradienteCamadasIntermediarias(gradienteLast, pesosCamadas.get(i + 1), derivadaSigmoidI.get(i));
-                    //System.out.println("Gradiente camada "+i+"\n: " + Arrays.toString(gradiente));
+                 //   System.out.println("Gradiente camada "+i+"\n: " + Arrays.toString(gradiente));
                     pesosCamadas.set(i, novoPeso(pesosCamadas.get(i), taxaAprendizagem, gradiente, saidasCamadas.get(i-1),comMomentum));
-                    //System.out.println("Matriz pesos camada "+i+" atualizada:\n"+Arrays.deepToString(pesosCamadas.get(i)).replaceAll("],", "],\n"));
+                  //  System.out.println("Matriz pesos camada "+i+" atualizada:\n"+Arrays.deepToString(pesosCamadas.get(i)).replaceAll("],", "],\n"));
                     gradienteLast = gradiente; // guarda o ultimo gradiente para o calculo do proximo
                 }
                 //calculo gradiente da primeira camada e atualizacao de pesos da primeira camada
                 gradiente = gradienteCamadasIntermediarias(gradienteLast, pesosCamadas.get(1), derivadaSigmoidI.get(0));
-                //System.out.println("Gradiente 1a camada:\n" + Arrays.toString(gradiente));
+              // System.out.println("Gradiente 1a camada:\n" + Arrays.toString(gradiente));
+               //revisar calculo do gradiente das outras camadas.
                 pesosCamadas.set(0, novoPeso(pesosCamadas.get(0), taxaAprendizagem, gradiente, entrada.get(k),comMomentum));
-                //System.out.println("Matriz pesos 1a camada atualizada:\n"+Arrays.deepToString(pesosCamadas.get(0)).replaceAll("],", "],\n")+"\n");
+              // System.out.println("Matriz pesos 1a camada atualizada:\n"+Arrays.deepToString(pesosCamadas.get(0)).replaceAll("],", "],\n")+"\n");
 
                 //atualizacao vetor de pesos das outras camadas
                 derivadaSigmoidI.clear();

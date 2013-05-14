@@ -24,20 +24,20 @@ public class PerceptronMultiCamadas {
          for (float[] y : resultado) {
              resultadoString += ""+Arrays.toString(y)+"\n";
          }
-         return resultadoString;
+         return "["+resultadoString.replaceAll("]",";").replaceAll("]]","],\n").replaceAll("\\["," ")+"]\n";
     }
     
     // método que converte uma ArrayList<float[][]> para String formato impressao
     public static String arraylistMatrizToString(ArrayList<float[][]> resultado) {
-         String resultadoString = "";
+         String resultadoString = "[";
          for (float[][] y : resultado) {
-             resultadoString += ""+Arrays.deepToString(y).replaceAll("],","],\n").replaceAll("]]","],\n")+"\n";
+             resultadoString += ""+Arrays.deepToString(y).replaceAll("],",";\n").replaceAll("]]","],\n").replaceAll("\\["," ")+"\n";
          }
-         return resultadoString;
+         return resultadoString+"]";
     }
     
     public static String matrizToString(float[][] matriz){
-        return Arrays.deepToString(matriz).replaceAll("],","],\n").replaceAll("]]","],\n")+"\n";
+        return "["+Arrays.deepToString(matriz).replaceAll("],",";\n").replaceAll("]]","],\n").replaceAll("\\["," ")+"}\n";
     }
     
     public static ArrayList<float[]> classificacaoAmostras(ArrayList<float[][]> pesosCamadas,int[] qtdNeuronios, int qtdCamadaIntermediaria) {                
@@ -217,9 +217,8 @@ public class PerceptronMultiCamadas {
             for (int j = 0; j < pesoAnterior[0].length; j++) {
                 if(comMomentum){ // adiciona fator momentum na atualizacao
                     // Wji(t+1) = Wji(t) + α (Wji(t) - Wji(t-1)) + η . δj . Yj
-                    // 0 ≤ α ≥ 0,9
-                    
-                    pesosAtualizado[i][j] = pesoAnterior[i][j] + taxaAprendizagem * gradiente[i] * saidaCamada[i];
+                    // 0 ≤ α ≥ 0,9                    
+                    pesosAtualizado[i][j] = pesoAnterior[i][j] + taxaAprendizagem * gradiente[i] * saidaCamada[j];
                 }
                 else{
                     pesosAtualizado[i][j] = pesoAnterior[i][j] + taxaAprendizagem * gradiente[i] * saidaCamada[j];
@@ -348,8 +347,8 @@ public class PerceptronMultiCamadas {
     public static void main(String[] args) throws Exception {        
         // Definição dos parâmetros do algoritmo
         int qtdTreino = 3;
-        int qtdNeuronios[] = {5, 3}; //
         int qtdEntrada = 5; //4 entradas + 1 entrada do bias
+        int[] qtdNeuronios = {5,3};
         int qtdValoresDesejados = 3;
         int qtdNeuronios1aCamadaIntermediaria = 5; // qtd neuronios na 1a camada intermediaria
         float erro = (float) 0.000001;
@@ -358,7 +357,6 @@ public class PerceptronMultiCamadas {
         // Leitura de arquivos de entrada        
         leArquivo("treina.txt", qtdValoresDesejados);
         leArquivoTeste("teste.txt", qtdValoresDesejados);       
-//        leArquivoTeste("teste_1.txt", qtdValoresDesejados);       
 
         // Variaveis para armazenar saidas do treinamento e da classificacao
         ArrayList<float[][]> resultadoBackNormal; // arraylist pesos resultado treinamento normal
@@ -367,7 +365,17 @@ public class PerceptronMultiCamadas {
         ArrayList<float[]> resultadoClassificacaoMomentum; //saida da ultima camada rede teste momentum
                 
         // Loop principal treinamentos + classificacoes      
-        for (int k = 0; k < qtdTreino; k++) {            
+        for (int k = 0; k < qtdTreino; k++) {
+            //int[] qtdNeuronios = montaVetorCamadas(k);
+            if(k==1){
+                qtdNeuronios[0]=10; // segundo treinamento com 10 neuronios camada intermediaria
+                qtdNeuronios1aCamadaIntermediaria = 10;
+            }
+            if(k==2){
+                qtdNeuronios[0]=15; // terceiro treinamento com 15 neuronios camada intermediaria
+                qtdNeuronios1aCamadaIntermediaria=15;
+            }
+
             // Inicializacao das matrizes de pesos         
             ArrayList<float[][]> pesosInicial = inicializarRede(qtdNeuronios, qtdNeuronios.length, qtdEntrada);  
             System.out.print("Matriz peso inicial:\n"+arraylistMatrizToString(pesosInicial));
@@ -403,25 +411,5 @@ public class PerceptronMultiCamadas {
             resultadoClassificacaoNormal.clear();
             resultadoClassificacaoMomentum.clear();
         }        
-    }
-    
-    public static int[] montaVetorCamadas(int k,int[] qtdCamadaIntermediaria,int qtdUltimaCamada){
-        int[] qtdNeuronios = new int[2]; // quantidade de camadas da rede
-        qtdNeuronios[0] = qtdCamadaIntermediaria[k];
-        qtdNeuronios[1] = qtdUltimaCamada;
-        return qtdNeuronios;
-    }
+    }    
 }
-
-        // parametros do caso de teste slide Angelo
-//        int qtdTreino = 1;
-//        int qtdNeuronios[] = {3, 2, 1}; //
-//        int qtdEntrada = 3; //2 entradas + 1 entrada do bias
-//        int qtdValoresDesejados = 1;
-//        int qtdNeuronios1aCamadaIntermediaria = 3; // qtd neuronios na 1a camada intermediaria
-//        int qtdValoresDesejados = 1;
-//        float erro = (float) 0.01;
-//        float taxaAprendizagem = (float) 0.1;
-
-//       float[][] matrizPeso1 = {{(float)0.2,(float)0.4,(float)0.5},{(float)0.3,(float)0.6,(float)0.7},{(float)0.4,(float)0.8,(float)0.3}};
-//        pesosInicial.set(0, matrizPeso1);

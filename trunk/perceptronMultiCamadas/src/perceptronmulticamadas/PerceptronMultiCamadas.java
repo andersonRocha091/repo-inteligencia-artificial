@@ -366,7 +366,6 @@ public class PerceptronMultiCamadas {
                 
         // Loop principal treinamentos + classificacoes      
         for (int k = 0; k < qtdTreino; k++) {
-            //int[] qtdNeuronios = montaVetorCamadas(k);
             if(k==1){
                 qtdNeuronios[0]=10; // segundo treinamento com 10 neuronios camada intermediaria
                 qtdNeuronios1aCamadaIntermediaria = 10;

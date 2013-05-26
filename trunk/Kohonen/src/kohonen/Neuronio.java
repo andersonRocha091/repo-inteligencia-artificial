@@ -14,8 +14,9 @@ public class Neuronio {
 
     private float[] vetorPesos;
     private int indice;
+    
 
-    public Neuronio(int tamanhoVetor, int indice) {
+    public Neuronio(int tamanhoVetor, int indice){
         inicializarPesos(tamanhoVetor);
         this.indice = indice;
     }
@@ -34,6 +35,11 @@ public class Neuronio {
 
     public void setVetorPesos(float[] vetorPesos) {
         this.vetorPesos = vetorPesos;
+    }
+    public void atualizarPesos(float[] entrada, float taxaAprendizagem){
+     for (int i = 0; i < vetorPesos.length; i++) {
+            vetorPesos[i] = vetorPesos[i] + taxaAprendizagem *( entrada[i] - vetorPesos[i]);                            
+        } 
     }
 
     public int getIndice() {

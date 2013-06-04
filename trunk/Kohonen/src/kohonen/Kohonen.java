@@ -34,8 +34,65 @@ public class Kohonen {
         return "[" + Arrays.deepToString(matriz).replaceAll("],", ";\n").replaceAll("]]", "],\n").replaceAll("\\[", " ") + "}\n";
     }
 
-    public static int[] classificacaoAmostras(Neuronio[][] mapaTreinado, ArrayList<float[]> entradaTeste) {
-        int[] neuroniosVencedores = new int[entradaTeste.size()];
+    public static char[] classificacaoAmostras(Neuronio[][] mapaTreinado, ArrayList<float[]> entradaTeste) {
+        char[] neuroniosVencedores = new char[entradaTeste.size()];
+        int[] vencedoresAnteriores = new int[entradaTeste.size()];
+        int[] vencedoresAtuais = new int[entradaTeste.size()];
+        float normaAnterior = Float.POSITIVE_INFINITY;
+        float norma = 0;
+        int[] deslocamentoX = {0, 0, 1, 0, -1};
+        int[] deslocamentoY = {0, 1, 0, -1, 0};
+        float menorNorma = 0;
+        char classePadrao='Z';
+        int indiceVencedorX = 0;
+        int indiceVencedorY = 0;
+        int epocas = 0;
+
+       
+       //     vencedoresAnteriores = Arrays.copyOf(vencedoresAtuais, vencedoresAtuais.length);
+
+            for (int i = 0; i < entradaTeste.size(); i++) {
+                menorNorma = Float.POSITIVE_INFINITY;
+                for (int j = 0; j < mapaTreinado.length; j++) {
+                    for (int k = 0; k < mapaTreinado[0].length; k++) {
+
+                        norma = calcularDistancia(entradaTeste.get(i), mapaTreinado[j][k].getVetorPesos());
+
+                        if (norma < menorNorma) {
+                            menorNorma = norma;
+                            classePadrao = mapaTreinado[j][k].getClasse();
+                            indiceVencedorX = k;
+                            indiceVencedorY = j;
+                        }
+                    }
+                }
+                neuroniosVencedores[i] = classePadrao;
+                norma = 0;
+                //  System.out.println("vencedor x: "+indiceVencedorX+"vencedor y: "+indiceVencedorY);
+                // System.out.println("norma:"+norma);
+
+               /* for (int t = 0; t < deslocamentoX.length; t++) {
+                    try {
+                        rede[indiceVencedorY + deslocamentoY[t]][indiceVencedorX + deslocamentoX[t]].atualizarPesos(entrada.get(i), menorNorma);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                    }
+
+                }*/
+
+
+            }
+        //    System.out.println("vetorAtual" + Arrays.toString(neuroniosVencedores));
+
+            
+            // normaAnterior = Float.POSITIVE_INFINITY;
+           // menorNorma = 0;
+           // epocas++;
+
+            
+
+
+        
+        
 
         return neuroniosVencedores;
     }
@@ -84,14 +141,15 @@ public class Kohonen {
     }
 
     /*public static float[] novoPeso(float[] peso, float taxaAprendizagem, float[] entrada) {        
-    for (int i = 0; i < peso.length; i++) {
-    peso[i] = peso[i] + taxaAprendizagem *( entrada[i] - peso[i]);
-    }
-    return peso;
-    }*/
+     for (int i = 0; i < peso.length; i++) {
+     peso[i] = peso[i] + taxaAprendizagem *( entrada[i] - peso[i]);                            
+     }        
+     return peso;
+     }*/
     public static Neuronio[][] kohonen(ArrayList<float[]> entrada, Neuronio[][] rede, float aprendizagem) {
         int[] vencedoresAnteriores = new int[entrada.size()];
         int[] vencedoresAtuais = new int[entrada.size()];
+        float normaAnterior = Float.POSITIVE_INFINITY;
         float norma = 0;
         int[] deslocamentoX = {0, 0, 1, 0, -1};
         int[] deslocamentoY = {0, 1, 0, -1, 0};
@@ -103,11 +161,14 @@ public class Kohonen {
 
         do {
             vencedoresAnteriores = Arrays.copyOf(vencedoresAtuais, vencedoresAtuais.length);
+
             for (int i = 0; i < entrada.size(); i++) {
                 menorNorma = Float.POSITIVE_INFINITY;
                 for (int j = 0; j < rede.length; j++) {
                     for (int k = 0; k < rede[0].length; k++) {
+
                         norma = calcularDistancia(entrada.get(i), rede[j][k].getVetorPesos());
+
                         if (norma < menorNorma) {
                             menorNorma = norma;
                             indiceVencedor = rede[j][k].getIndice();
@@ -117,28 +178,58 @@ public class Kohonen {
                     }
                 }
                 vencedoresAtuais[i] = indiceVencedor;
-                System.out.println("indice vencedor: "+indiceVencedor);
+
                 //  System.out.println("vencedor x: "+indiceVencedorX+"vencedor y: "+indiceVencedorY);
-                //  System.out.println("norma:"+norma);
+                // System.out.println("norma:"+norma);
 
                 for (int t = 0; t < deslocamentoX.length; t++) {
                     try {
                         rede[indiceVencedorY + deslocamentoY[t]][indiceVencedorX + deslocamentoX[t]].atualizarPesos(entrada.get(i), menorNorma);
-                    } catch (ArrayIndexOutOfBoundsException e) {                        
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                    }
+
+                }
+
+
+            }
+            System.out.println("vetorAtual" + Arrays.toString(vencedoresAtuais));
+
+            norma = 0;
+            // normaAnterior = Float.POSITIVE_INFINITY;
+            menorNorma = 0;
+            epocas++;
+
+            
+
+
+        } while (!Arrays.equals(vencedoresAnteriores, vencedoresAtuais));
+        
+        for (int i = 0; i < vencedoresAtuais.length; i++) { //classificação neuronios
+                for (int j = 0; j < rede.length; j++) {
+                    for (int k = 0; k < rede[0].length; k++) {
+                        if (vencedoresAtuais[i] == rede[j][k].getIndice()) {
+                            if (i < 20) {
+                                rede[j][k].setClasse('A');
+                            }
+                            else if(i>=20 && i<60){
+                                rede[j][k].setClasse('B');
+                                }
+                            
+                            else if(i>=60){
+                                rede[j][k].setClasse('C');
+                            }
+                    }
+                        }
                     }
                 }
+            
+        for(int i=0;i<rede.length;i++){
+            System.out.print(""+i+" ");
+            for(int j=0; j<rede[0].length;j++){
+                System.out.print(""+rede[i][j].getClasse());
             }
-            norma = 0;
-            menorNorma = 0;
-            indiceVencedor=-1;
-            indiceVencedorX=-1;
-            indiceVencedorY=-1;
-            epocas++;
-            System.out.println("Vencedores a: "+Arrays.toString(vencedoresAtuais));
-            System.out.println("Vencedores b: "+Arrays.toString(vencedoresAnteriores));
-            System.out.println("Qnt epocas atual: "+epocas);
-        } while (!Arrays.equals(vencedoresAnteriores, vencedoresAtuais));
-        System.out.println("------- O treinamento teve "+epocas+" epocas.----------");
+            System.out.println("");
+        }
         return rede;
     }
 
@@ -163,7 +254,6 @@ public class Kohonen {
 
         // Leitura de arquivos de entrada        
         ArrayList<float[]> entrada = leArquivo("treina.txt");
-        //ArrayList<float[]> entrada = leArquivo("treinamento.txt");
         ArrayList<float[]> entradaTeste = leArquivo("teste.txt");
 
         Neuronio[][] mapaTopologico = inicializarRede(qtdNeuronios, qtdPesosNeuronio);
@@ -174,7 +264,7 @@ public class Kohonen {
 
         System.out.println("Mapa treinado:\n " + Arrays.deepToString(mapaTreinado).replaceAll("],", ";\n").replaceAll("]]", "],\n").replaceAll("\\[", " ") + "\n");
 
-        int[] neuroniosVencedores = classificacaoAmostras(mapaTreinado, entradaTeste);
+        char[] neuroniosVencedores = classificacaoAmostras(mapaTreinado, entradaTeste);
 
         System.out.println("Neuronios vencedores classificacao \n" + Arrays.toString(neuroniosVencedores));
     }

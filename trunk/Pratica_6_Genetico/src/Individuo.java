@@ -19,6 +19,10 @@ public class Individuo implements Comparable<Individuo>{
         this.cromossomo = cromossomo;
         this.aptidao = 0;
     }
+    
+    public Individuo(){
+        this.aptidao = 0;
+    }
 
     public float getCromossomoFloat() {
         return cromossomoFloat;

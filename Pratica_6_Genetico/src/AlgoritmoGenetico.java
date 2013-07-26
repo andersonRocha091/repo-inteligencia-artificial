@@ -4,7 +4,7 @@ import java.util.Collections;
 
 /**
  *
- * @author nephila
+ * @author Maria e Anderson
  */
 public class AlgoritmoGenetico {
     
@@ -53,15 +53,15 @@ public class AlgoritmoGenetico {
             Collections.sort(populacao);        
             //imprimirPopulacao(populacao);
             
-            System.out.println("tamanho da populacao no final da geracao: "+populacao.size());
+            //System.out.println("tamanho da populacao no final da geracao: "+populacao.size());
             
             //descarta os menos aptos
             descartarMenosAptos();            
         }        
         //System.out.println("Populacao convertida:\n"+Arrays.toString(converterPopulacaoBinarioFloat(populacao)));
-        System.out.println("Quantidade de geracoes: "+geracoes);
+        //System.out.println("Quantidade de geracoes: "+geracoes);
         System.out.println("\n\nMelhores Individuos por geracao: ");
-        System.out.println(melhorIndividuoDeCadaGeracao.toString().replace(".,",".,\n"));
+        System.out.println(melhorIndividuoDeCadaGeracao.toString().replace(".,",",\n"));
         
         //populacao final
         //imprimirPopulacao(populacao);  
@@ -237,9 +237,3 @@ public class AlgoritmoGenetico {
         }
     }
 }
-
-// pro teste da conversão do binário pro decimal
- /*ArrayList<Individuo> populacao = new ArrayList<Individuo>();
-int[]crom = {1,0,0,0,1,0,1,1,1,0,1,1,0,1,0,1,0,0,0,1,1,1};
-Individuo novoIndividuo = new Individuo(crom);
-populacao.add(novoIndividuo);*/

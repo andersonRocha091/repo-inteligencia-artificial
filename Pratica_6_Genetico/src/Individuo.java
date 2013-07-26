@@ -60,6 +60,7 @@ public class Individuo implements Comparable<Individuo>{
     
     @Override
     public String toString(){
-        return "Cromossomo: "+Arrays.toString(this.cromossomo)+", cromossomo float: "+this.cromossomoFloat+", aptidao: "+this.aptidao+".";
+        //return "Cromossomo: "+Arrays.toString(this.cromossomo)+", cromossomo float: "+this.cromossomoFloat+", aptidao: "+this.aptidao+".";
+        return "Aptidao: "+this.aptidao+".";
     }
 }
